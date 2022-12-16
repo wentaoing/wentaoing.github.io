@@ -1,0 +1,178 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>多进程开发（三） | 李文涛的学习笔记</title><meta name="author" content="李文涛"><meta name="copyright" content="李文涛"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本节和【OSTEP】并发部分的内容大体一致。 线程概述与进程类似，线程是允许应用程序并发执行多个任务的一种机制。一个进程可以包含多个线程。 进程是 CPU 分配资源的最小单位，线程是操作系统调度执行的最小单位。 线程是轻量级进程（LWP：Light Wight Process），在 Linux 环境下线程的本质任是进程。 查看指定进程的 LWP 号：ps -Lf pid 进程间的信息难以共享，进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多进程开发（三）">
+<meta property="og:url" content="http://example.com/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%9B%9B%EF%BC%89/index.html">
+<meta property="og:site_name" content="李文涛的学习笔记">
+<meta property="og:description" content="本节和【OSTEP】并发部分的内容大体一致。 线程概述与进程类似，线程是允许应用程序并发执行多个任务的一种机制。一个进程可以包含多个线程。 进程是 CPU 分配资源的最小单位，线程是操作系统调度执行的最小单位。 线程是轻量级进程（LWP：Light Wight Process），在 Linux 环境下线程的本质任是进程。 查看指定进程的 LWP 号：ps -Lf pid 进程间的信息难以共享，进程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2022/12/16/U2fSbzG6slE7L9V.jpg">
+<meta property="article:published_time" content="2022-12-16T11:19:56.000Z">
+<meta property="article:modified_time" content="2022-12-16T11:22:38.045Z">
+<meta property="article:author" content="李文涛">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2022/12/16/U2fSbzG6slE7L9V.jpg"><link rel="shortcut icon" href="/img/head.jpeg"><link rel="canonical" href="http://example.com/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%9B%9B%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '多进程开发（三）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-12-16 19:22:38'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="李文涛的学习笔记" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2022/12/05/fRJagzMcvKnrAjU.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2022/12/16/U2fSbzG6slE7L9V.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">李文涛的学习笔记</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">多进程开发（三）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-12-16T11:19:56.000Z" title="发表于 2022-12-16 19:19:56">2022-12-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-12-16T11:22:38.045Z" title="更新于 2022-12-16 19:22:38">2022-12-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%A1%B9%E7%9B%AE/">Linux高并发服务器项目</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="多进程开发（三）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>本节和<a target="_blank" rel="noopener" href="https://www.ceyewan.top/p/695d7f82.html">【OSTEP】并发</a>部分的内容大体一致。</p>
+<h3 id="线程概述"><a href="#线程概述" class="headerlink" title="线程概述"></a>线程概述</h3><p>与进程类似，线程是允许应用程序并发执行多个任务的一种机制。一个进程可以包含多个线程。</p>
+<p>进程是 CPU 分配资源的最小单位，线程是操作系统调度执行的最小单位。</p>
+<p>线程是轻量级进程（LWP：Light Wight Process），在 Linux 环境下线程的本质任是进程。</p>
+<p>查看指定进程的 LWP 号：<code>ps -Lf pid</code></p>
+<p>进程间的信息难以共享，进程通信较难；调用 fork() 来创建进程的代价相对较高。而线程通过共享解决了这些问题。</p>
+<p>线程之间的共享和非共享资源</p>
+<ul>
+<li>共享资源：进程 ID 和父进程 ID，进程组 ID 和会话 ID，用户 ID 和用户组 ID，文件描述符，信号处理，文件系统的相关信息，虚拟地址空间（除栈和 <code>.text</code>）。</li>
+<li>非共享资源：线程 ID，信号掩码，线程特有数据，error 变量，实时调度策略和优先级，栈、本地变量和函数的调用链接信息</li>
+</ul>
+<p>查看当前 pthread 库版本：<code>getconf GNU_LIBPTHREAD_VERSION</code></p>
+<h3 id="创建线程"><a href="#创建线程" class="headerlink" title="创建线程"></a>创建线程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);</span><br><span class="line">// 参数1：pthread_t *thread：传递一个 pthread_t 类型的指针变量 or 地址</span><br><span class="line">// 参数2：const pthread_attr_t *attr：用于手动设置新建线程的属性</span><br><span class="line">// 例如线程的调用策略、线程所能使用的栈内存的大小等。默认为 NULL</span><br><span class="line">// 参数3：void *(*start_routine) (void *)：以函数指针的方式指明新建线程需要执行的函数</span><br><span class="line">// 该函数的参数最多有 1 个（可以省略不写），形参和返回值的类型都必须为 void* 类型。</span><br><span class="line">// void *arg：指定传递给 start_routine 函数的实参，当不需要传递任何数据时，将 arg 赋值为 NULL 即可</span><br><span class="line">// 成功：返回 0 ;失败返回错误号，调用 char *strerror(int errornum) 查看</span><br></pre></td></tr></table></figure>
+
+<h3 id="终止线程"><a href="#终止线程" class="headerlink" title="终止线程"></a>终止线程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">void pthread_exit(void *retval);</span><br><span class="line">// 终止一个线程，在哪个线程中调用，就表示终止哪个线程，终止主线程不会影响子线程</span><br><span class="line">// 传递一个指针，作为一个返回值</span><br><span class="line">// 子线程 return NULL 等价与 pthread_exit(NULL)</span><br><span class="line">pthread_t pthread_self();</span><br><span class="line">// 获取线程的 id</span><br></pre></td></tr></table></figure>
+
+<h3 id="连接已终止的线程"><a href="#连接已终止的线程" class="headerlink" title="连接已终止的线程"></a>连接已终止的线程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">int pthread_join(pthread_t thread, void **retval);</span><br><span class="line">// 功能，和一个已经终止的线程进行连接，回收子线程的资源，是阻塞函数，retval 用于获取子线程的返回值</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程分离"><a href="#线程分离" class="headerlink" title="线程分离"></a>线程分离</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">int pthread_detch(pthread_t thread);</span><br><span class="line">// 分离一个线程，当一个线程分离后，终止后资源会自动释放</span><br><span class="line">// 不能多次分离，否则会有 undefined behave </span><br></pre></td></tr></table></figure>
+
+<h3 id="线程取消"><a href="#线程取消" class="headerlink" title="线程取消"></a>线程取消</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">int pthread_cancel(pthread_t thread);</span><br><span class="line">// 取消线程，让线程终止，但并不是马上终止，而是子进程执行到取消点时</span><br><span class="line">// 取消点可以理解为系统调用时</span><br></pre></td></tr></table></figure>
+
+<p>一个小例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">#include &quot;header.h&quot;</span><br><span class="line"></span><br><span class="line">int ticket = 100;</span><br><span class="line">pthread_mutex_t mutex;</span><br><span class="line"></span><br><span class="line">void *sellticket(void *arg)</span><br><span class="line">&#123;</span><br><span class="line">    while (1)</span><br><span class="line">    &#123;</span><br><span class="line">        pthread_mutex_lock(&amp;mutex);</span><br><span class="line">        if (ticket &gt; 0)</span><br><span class="line">        &#123;</span><br><span class="line">            printf(&quot;%ld sell the %d ticket\n&quot;, pthread_self(), ticket);</span><br><span class="line">            ticket--;</span><br><span class="line">            pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">            usleep(5000);</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">            pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    pthread_mutex_init(&amp;mutex, NULL);</span><br><span class="line">    pthread_t pid[3];</span><br><span class="line">    int rc = pthread_create(&amp;pid[0], NULL, sellticket, NULL);</span><br><span class="line">    assert(rc == 0);</span><br><span class="line">    rc = pthread_create(&amp;pid[1], NULL, sellticket, NULL);</span><br><span class="line">    assert(rc == 0);</span><br><span class="line">    rc = pthread_create(&amp;pid[2], NULL, sellticket, NULL);</span><br><span class="line">    assert(rc == 0);</span><br><span class="line">    // 方法一，阻塞</span><br><span class="line">    rc = pthread_join(pid[0], NULL);</span><br><span class="line">    assert(rc == 0);</span><br><span class="line">    rc = pthread_join(pid[1], NULL);</span><br><span class="line">    assert(rc == 0);</span><br><span class="line">    rc = pthread_join(pid[2], NULL);</span><br><span class="line">    assert(rc == 0);</span><br><span class="line">    // 方法二，不阻塞</span><br><span class="line">    // rc = pthread_detach(pid[0]);</span><br><span class="line">    // assert(rc == 0);</span><br><span class="line">    // rc = pthread_detach(pid[1]);</span><br><span class="line">    // assert(rc == 0);</span><br><span class="line">    // rc = pthread_detach(pid[2]);</span><br><span class="line">    // assert(rc == 0);</span><br><span class="line">    // 方法三，不阻塞</span><br><span class="line">    // pthread_exit(NULL);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程属性"><a href="#线程属性" class="headerlink" title="线程属性"></a>线程属性</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">C</span><br><span class="line">// 初始化线程属性变量</span><br><span class="line">int pthread_attr_init(pthread_attr_t *attr);</span><br><span class="line">// 释放线程属性的资源</span><br><span class="line">int pthread_attr_destroy(pthread_attr_t *attr);</span><br><span class="line">// 设置线程分离的状态属性</span><br><span class="line">int pthread_addr_setdetachstate(const pthread_attr_t *attr, int detachstate);</span><br><span class="line">// 获取线程分离的状态属性</span><br><span class="line">int pthread_addr_getdetachstate(const pthread_attr_t *attr, int *detachstate);</span><br></pre></td></tr></table></figure>
+
+<p>剩下的完全一样，没必要浪费时间了。。。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">李文涛</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%9B%9B%EF%BC%89/">http://example.com/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%9B%9B%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">李文涛的学习笔记</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/12/16/U2fSbzG6slE7L9V.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%94%EF%BC%89/"><img class="prev-cover" src="https://s2.loli.net/2022/12/16/v6zTaYRy7beJXrm.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux网络编程（一）</div></div></a></div><div class="next-post pull-right"><a href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B8%89%EF%BC%89/"><img class="next-cover" src="https://s2.loli.net/2022/12/16/plYWZ54kIG8bzsC.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">多进程开发（二）</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/12/06/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B8%80%EF%BC%89/" title="1.Linux 系统编程入门"><img class="cover" src="https://s2.loli.net/2022/12/06/OG7yXhPTULZBMnj.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-06</div><div class="title">1.Linux 系统编程入门</div></div></a></div><div><a href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B8%89%EF%BC%89/" title="多进程开发（二）"><img class="cover" src="https://s2.loli.net/2022/12/16/plYWZ54kIG8bzsC.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-16</div><div class="title">多进程开发（二）</div></div></a></div><div><a href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%8C%EF%BC%89/" title="多进程开发（一）"><img class="cover" src="https://s2.loli.net/2022/12/16/rNlIfbK9zBq1dYu.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-16</div><div class="title">多进程开发（一）</div></div></a></div><div><a href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%94%EF%BC%89/" title="Linux网络编程（一）"><img class="cover" src="https://s2.loli.net/2022/12/16/v6zTaYRy7beJXrm.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-16</div><div class="title">Linux网络编程（一）</div></div></a></div><div><a href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%85%AD%EF%BC%89/" title="Linux网络编程（二）"><img class="cover" src="https://s2.loli.net/2022/12/16/HSZI5ABnChdKPwz.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-16</div><div class="title">Linux网络编程（二）</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2022/12/05/fRJagzMcvKnrAjU.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">李文涛</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">线程概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">创建线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%88%E6%AD%A2%E7%BA%BF%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">终止线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E6%8E%A5%E5%B7%B2%E7%BB%88%E6%AD%A2%E7%9A%84%E7%BA%BF%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">连接已终止的线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%88%86%E7%A6%BB"><span class="toc-number">5.</span> <span class="toc-text">线程分离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%8F%96%E6%B6%88"><span class="toc-number">6.</span> <span class="toc-text">线程取消</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%B1%9E%E6%80%A7"><span class="toc-number">7.</span> <span class="toc-text">线程属性</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%85%AD%EF%BC%89/" title="Linux网络编程（二）"><img src="https://s2.loli.net/2022/12/16/HSZI5ABnChdKPwz.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux网络编程（二）"/></a><div class="content"><a class="title" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%85%AD%EF%BC%89/" title="Linux网络编程（二）">Linux网络编程（二）</a><time datetime="2022-12-16T11:28:03.000Z" title="发表于 2022-12-16 19:28:03">2022-12-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%94%EF%BC%89/" title="Linux网络编程（一）"><img src="https://s2.loli.net/2022/12/16/v6zTaYRy7beJXrm.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux网络编程（一）"/></a><div class="content"><a class="title" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%94%EF%BC%89/" title="Linux网络编程（一）">Linux网络编程（一）</a><time datetime="2022-12-16T11:22:50.000Z" title="发表于 2022-12-16 19:22:50">2022-12-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%9B%9B%EF%BC%89/" title="多进程开发（三）"><img src="https://s2.loli.net/2022/12/16/U2fSbzG6slE7L9V.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多进程开发（三）"/></a><div class="content"><a class="title" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E5%9B%9B%EF%BC%89/" title="多进程开发（三）">多进程开发（三）</a><time datetime="2022-12-16T11:19:56.000Z" title="发表于 2022-12-16 19:19:56">2022-12-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B8%89%EF%BC%89/" title="多进程开发（二）"><img src="https://s2.loli.net/2022/12/16/plYWZ54kIG8bzsC.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多进程开发（二）"/></a><div class="content"><a class="title" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B8%89%EF%BC%89/" title="多进程开发（二）">多进程开发（二）</a><time datetime="2022-12-16T11:14:22.000Z" title="发表于 2022-12-16 19:14:22">2022-12-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%8C%EF%BC%89/" title="多进程开发（一）"><img src="https://s2.loli.net/2022/12/16/rNlIfbK9zBq1dYu.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多进程开发（一）"/></a><div class="content"><a class="title" href="/2022/12/16/Linux%E9%AB%98%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%BA%8C%EF%BC%89/" title="多进程开发（一）">多进程开发（一）</a><time datetime="2022-12-16T11:07:46.000Z" title="发表于 2022-12-16 19:07:46">2022-12-16</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By 李文涛</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
